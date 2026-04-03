@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>40 Уникальных Карточек | Атабекян</title>
+    <style>
+        /* --- 1. ОБЩИЕ СТИЛИ (ЛЕГКО МЕНЯТЬ ЗДЕСЬ) --- */
+        :root {
+            --card-w: 320px;         /* Ширина карточки */
+            --card-h: 180px;         /* Высота карточки */
+            --gap: 20px;             /* Расстояние между ними */
+            --header-bg: #1e272e;    /* Цвет верхней плашки */
+            --trans: all 0.3s ease;  /* Скорость анимации */
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #f1f2f6;
+            margin: 0; padding: 20px;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        /* Прямоугольник наверху */
+        .header-box {
+            width: 95%; max-width: 1050px;
+            background: var(--header-bg);
+            color: #fff; padding: 25px;
+            text-align: center; border-radius: 8px;
+            margin-bottom: 40px; font-size: 24px; font-weight: bold;
+        }
+
+        /* Сетка: СТРОГО 3 КАРТОЧКИ В РЯД */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr; /* 3 колонки */
+            gap: var(--gap);
+            max-width: 1050px;
+            margin-bottom: 60px;
+        }
+
+        /* Базовый стиль для ВСЕХ карточек */
+        .card-unit {
+            position: relative;
+            width: var(--card-w);
+            height: var(--card-h);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: var(--trans);
+            cursor: pointer;
+            text-align: center;
+            padding: 10px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        .card-unit:hover {
+            transform: scale(1.05) rotate(1deg); /* Легкий хаос при наведении */
+            z-index: 5;
+        }
+
+        /* Кнопка-стрелка */
+        .btn-code {
+            position: absolute; bottom: 10px; right: 10px;
+            background: rgba(0,0,0,0.6); color: #fff;
+            border: none; border-radius: 50%; width: 35px; height: 35px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            opacity: 0; transition: var(--trans); font-size: 20px;
+        }
+        .card-unit:hover .btn-code { opacity: 1; }
+
+        /* Модалка для кода */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; 
+            width: 100%; height: 100%; background: rgba(0,0,0,0.8);
+            z-index: 100; justify-content: center; align-items: center;
+        }
+        .modal-body {
+            background: #282a36; color: #50fa7b; padding: 30px;
+            border-radius: 10px; max-width: 500px; width: 90%;
+            position: relative; font-family: monospace;
+        }
+        .close { position: absolute; top: 10px; right: 15px; color: #fff; cursor: pointer; font-size: 25px; }
+
+    </style>
+</head>
+<body>
+
+    <div class="header-box">Атабекян Эрнест | ИСиП 2/2</div>
+
+    <div id="wrapper"></div>
+
+    <div id="modal" class="modal">
+        <div class="modal-body">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <p style="color: #bd93f9; margin-top: 0;">/* CSS этой карточки: */</p>
+            <pre id="code-text"></pre>
+        </div>
+    </div>
+
+    <script>
+        // БАЗА ДАННЫХ СТИЛЕЙ (40 штук, все разные)
+        const styles = [
+            "background: #ff7675; border-radius: 20px; box-shadow: 10px 10px 0px #d63031;",
+            "background: #1e272e; color: #00d8d6; border: 2px solid #00d8d6; border-radius: 0;",
+            "background: white; border: 4px solid black; clip-path: polygon(0 0, 100% 0, 100% 85%, 85% 100%, 0 100%);",
+            "background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%); color: white;",
+            "background: #f1f2f6; box-shadow: 8px 8px 16px #d1d9e6, -8px -8px 16px #ffffff; border-radius: 20px;",
+            "background: #2ed573; border-radius: 50% 10% 50% 10%; border: 3px solid #7bed9f;",
+            "background: #1a1a1a; border-left: 10px solid #ff4757; color: #fff;",
+            "background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.4);",
+            "background: gold; border: 5px double #000; font-weight: 900;",
+            "background: repeating-linear-gradient(45deg, #3742fa, #3742fa 5px, #5352ed 5px, #5352ed 10px); color: white;",
+            "background: #dfe4ea; border-bottom: 6px solid #2f3542; border-radius: 5px;",
+            "background: #000; color: #fff; border: 1px solid #fff; box-shadow: inset 0 0 15px #fff;",
+            "background: #badc58; border-radius: 100px; border: 2px solid #6ab04c;",
+            "background: #f9ca24; clip-path: circle(50% at 50% 50%);",
+            "background: #ffffff; background-image: radial-gradient(#000 10%, transparent 10%); background-size: 15px 15px;",
+            "background: #4834d4; color: #be2edd; border: 1px dashed white;",
+            "background: #eb4d4b; transform: rotate(2deg); box-shadow: 0 10px 20px rgba(0,0,0,0.3);",
+            "background: #95afc0; border: 2px solid #535c68; filter: contrast(150%);",
+            "background: #22a6b3; border-radius: 0 50px 0 50px; color: #fff;",
+            "background: #30336b; color: #f9ca24; border-top: 10px solid #f9ca24;",
+            "background: #fff; border: 2px solid #130f40; outline: 4px solid #130f40; outline-offset: -10px;",
+            "background: linear-gradient(to top, #30cfd0 0%, #330867 100%); color: white;",
+            "background: #c7ecee; border-right: 20px solid #7ed6df;",
+            "background: #1e272e; color: #ef5777; border: 1px solid #ef5777; border-radius: 40px;",
+            "background: #f1c40f; box-shadow: inset 0 0 40px #e67e22; color: #fff;",
+            "background: #2d3436; border-radius: 15px; border: 1px solid #636e72; color: #ffeaa7;",
+            "background: #fab1a0; border-top: 5px solid #ff7675; border-bottom: 5px solid #ff7675;",
+            "background: #00cec9; clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); color: white;",
+            "background: #e17055; border-radius: 50% 50% 0 0; border: 2px solid white;",
+            "background: #2f3640; color: #f5f6fa; border-left: 20px solid #dcdde1;",
+            "background: #f7d794; border: 3px dotted #786fa6; color: #786fa6;",
+            "background: #546de5; box-shadow: 0 0 25px rgba(84, 109, 229, 0.7); color: white;",
+            "background: #fff; background-image: linear-gradient(90deg, #ccc 1px, transparent 1px); background-size: 20px 20px;",
+            "background: #3d3d3d; border-radius: 50px 5px 50px 5px; color: #fff;",
+            "background: #ea8685; border: 4px solid #f8a5c2; box-shadow: 5px -5px 0px #f8a5c2;",
+            "background: #574b90; color: #f78fb3; font-family: 'Courier New';",
+            "background: #3dc1d3; border-radius: 30% 70% 50% 50% / 30% 30% 70% 70%;",
+            "background: #f3f9f1; border: 1px solid #8e44ad; box-shadow: inset 0 0 10px #8e44ad;",
+            "background: #000; color: #ff9f43; border-bottom: 10px double #ff9f43;",
+            "background: linear-gradient(90deg, #4b6cb7 0%, #182848 100%); color: white; border-radius: 12px;"
+        ];
+
+        // Перемешивание массива (Fisher-Yates shuffle)
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Названия секций и их рандом
+        const sections = ["Дизайн-Микс", "Геометрия", "Цвета", "Эксперимент"];
+        shuffle(sections);
+
+        const main = document.getElementById('wrapper');
+        const shuffledStyles = shuffle([...styles]);
+
+        // Рендер 4 секций по 10 карточек
+        sections.forEach((title, sIdx) => {
+            const wrap = document.createElement('div');
+            wrap.innerHTML = `<h2 style="color:#555; border-bottom:2px solid #ccc; padding-bottom:10px;">Секция: ${title}</h2>`;
+            
+            const grid = document.createElement('div');
+            grid.className = 'grid';
+
+            for (let i = 0; i < 10; i++) {
+                const styleCss = shuffledStyles[sIdx * 10 + i];
+                const card = document.createElement('div');
+                card.className = 'card-unit';
+                card.style.cssText = styleCss; // Применяем уникальный CSS
+                card.innerHTML = `
+                    <span>Style #${sIdx * 10 + i + 1}</span>
+                    <button class="btn-code" onclick="openModal('${styleCss}')">➔</button>
+                `;
+                grid.appendChild(card);
+            }
+            wrap.appendChild(grid);
+            main.appendChild(wrap);
+        });
+
+        // Работа с модальным окном
+        function openModal(css) {
+            const formatted = css.split('; ').join(';\n'); // Красивый перенос строк
+            document.getElementById('code-text').innerText = formatted;
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        window.onclick = (e) => { if(e.target.id === 'modal') closeModal(); }
+    </script>
+
+</body>
+</html>
